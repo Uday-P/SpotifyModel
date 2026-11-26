@@ -1,5 +1,9 @@
 import mesa
 import random
+random.seed(42)
+
+import csv
+import os
 
 # Music library
 music_library = [
@@ -139,8 +143,8 @@ class ListenerAgent(mesa.Agent):
 # Main recommendation model
 class RecommendationModel(mesa.Model):
 
-    def __init__(self, history, library):
-        super().__init__()
+    def __init__(self, history, library, seed=42):
+        super().__init__(rng=seed)
 
         self.library = library
 
@@ -204,3 +208,140 @@ print("Baseline unfamiliar genres:", baseline_results[1])
 
 print("Alternative unfamiliar artists:", alternative_results[0])
 print("Alternative unfamiliar genres:", alternative_results[1])
+
+# Create output folder
+os.makedirs("outputs", exist_ok=True)
+
+# Save raw recommendation data
+def save_raw(filename, recommendations):
+
+    with open(filename, "w", newline="") as file:
+
+        writer = csv.writer(file)
+
+        writer.writerow(["Song", "Artist", "Genre"])
+
+        writer.writerows(recommendations)
+
+# Save baseline and alternative recommendations
+save_raw("outputs/baseline_raw.csv", baseline_recommendations)
+
+save_raw("outputs/alternative_raw.csv", alternative_recommendations)
+
+# Save processed results
+def save_processed(filename, results):
+
+    with open(filename, "w", newline="") as file:
+
+        writer = csv.writer(file)
+
+        writer.writerow(["Unfamiliar Artists", "Unfamiliar Genres"])
+
+        writer.writerow(results)
+
+
+# Save baseline and alternative results
+save_processed("outputs/baseline_processed.csv", baseline_results)
+
+save_processed("outputs/alternative_processed.csv", alternative_results)
+
+# Save listening histories
+save_raw("outputs/baseline_history.csv", baseline_history)
+
+save_raw("outputs/alternative_history.csv", alternative_history)
+
+# Store repeated simulation results
+baseline_runs = []
+alternative_runs = []
+
+# Run each condition 30 times
+baseline_raw = []
+alternative_raw = []
+baseline_histories = []
+alternative_histories = []
+
+for run in range(30):
+
+    random.seed(42 + run)
+
+    baseline_history = create_listening_history(0.80)
+    alternative_history = create_listening_history(0.40)
+
+    baseline_raw.extend(baseline_recommendations)
+    alternative_raw.extend(alternative_recommendations)
+
+    baseline_histories.extend(baseline_history)
+    alternative_histories.extend(alternative_history)
+
+    baseline_model = RecommendationModel(
+        baseline_history, music_library, seed=42 + run
+    )
+
+    alternative_model = RecommendationModel(
+        alternative_history, music_library, seed=42 + run
+    )
+
+    baseline_recommendations = baseline_model.generate_recommendations()
+    alternative_recommendations = alternative_model.generate_recommendations()
+
+    baseline_runs.append(
+        measure_diversity(baseline_history, baseline_recommendations)
+    )
+
+    alternative_runs.append(
+        measure_diversity(alternative_history, alternative_recommendations)
+    )
+
+print("Baseline runs:", len(baseline_runs))
+print("Alternative runs:", len(alternative_runs))
+
+# Save repeated simulation results
+def save_runs(filename, results):
+
+    with open(filename, "w", newline="") as file:
+
+        writer = csv.writer(file)
+
+        writer.writerow([
+            "Run", "Unfamiliar Artists", "Unfamiliar Genres"
+        ])
+
+        for i, result in enumerate(results, start=1):
+            writer.writerow([i, result[0], result[1]])
+
+
+save_runs("outputs/baseline_processed.csv", baseline_runs)
+
+save_runs("outputs/alternative_processed.csv", alternative_runs)
+
+save_raw("outputs/baseline_raw.csv", baseline_raw)
+save_raw("outputs/alternative_raw.csv", alternative_raw)
+
+save_raw("outputs/baseline_history.csv", baseline_histories)
+save_raw("outputs/alternative_history.csv", alternative_histories)
+
+# Calculate average diversity
+def calculate_average(results):
+    artists = sum(result[0] for result in results) / len(results)
+    genres = sum(result[1] for result in results) / len(results)
+
+    return round(artists, 2), round(genres, 2)
+
+
+baseline_average = calculate_average(baseline_runs)
+alternative_average = calculate_average(alternative_runs)
+
+print("Baseline average:", baseline_average)
+print("Alternative average:", alternative_average)
+
+# Save final comparison
+with open("outputs/comparison.csv", "w", newline="") as file:
+    writer = csv.writer(file)
+
+    writer.writerow([
+        "Condition", "Familiar Percentage", "Runs",
+        "Average Unfamiliar Artists", "Average Unfamiliar Genres"
+    ])
+
+    writer.writerow(["Baseline", 80, 30, *baseline_average])
+    writer.writerow(["Alternative", 40, 30, *alternative_average])
