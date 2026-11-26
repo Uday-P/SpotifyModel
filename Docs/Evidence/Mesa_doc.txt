@@ -1,0 +1,13 @@
+Evidence ID: E2
+
+Source: Mesa Documentation
+
+URL: https://mesa.readthedocs.io/
+
+Evidence type: Published technical documentation
+
+Software version used: Mesa 3.5.2
+
+Relevance: Mesa documentation supports the implementation of the computational model, including the model class, listener agent and randomisation mechanisms.
+
+Limitation: The documentation provides technical guidance for constructing the simulation but does not provide evidence of Spotify's actual recommendation algorithm.

@@ -1,0 +1,25 @@
+Evidence ID: E3
+
+Source: Synthetic music library and simulated listening histories.
+
+Evidence type: Synthetic data.
+
+**Music library:**
+- 60 songs
+- 20 artists
+- 10 genres
+- 20 songs assigned to the familiar music pool
+- 40 songs assigned to the unfamiliar music pool
+
+**Experimental conditions:**
+- Baseline: 80% familiar music and 20% unfamiliar music.
+- Alternative: 40% familiar music and 60% unfamiliar music.
+- 20 songs per listening history.
+- 30 simulations per condition.
+- Random seeds ranging from 42 to 71.
+
+**Relevance:** The synthetic data provides controlled inputs for examining the relationship between listening-history familiarity and recommendation diversity.
+
+**Location:** The music library is defined in SpotifyPrototype.py. Generated listening histories are stored in outputs/baseline_history.csv and outputs/alternative_history.csv.
+
+**Limitation:** The music library and familiarity classifications are artificially constructed for the experiment and do not represent actual Spotify listening data or user preferences.
